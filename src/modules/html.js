@@ -159,7 +159,8 @@
       x: 0,
       y: 0,
       html2canvas: {},
-      jsPDF: {}
+      jsPDF: {},
+      backgroundColor: "transparent"
     }
   };
 
@@ -245,13 +246,8 @@
         left: 0,
         right: 0,
         top: 0,
-<<<<<<< HEAD
-        margin: 'auto',
-        backgroundColor: this.opt.backgroundColor || 'transparent'
-=======
         margin: "auto",
-        backgroundColor: "white"
->>>>>>> 96b405398fe03a8415237bdda1faed0ebd26fa6a
+        backgroundColor: this.opt.backgroundColor
       }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
       var source = cloneNode(

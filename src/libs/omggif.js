@@ -731,7 +731,12 @@ function GifReader(buf) {
       }
 
       if (index === trans) {
-        op += 4;
+        // op += 4;
+        
+        pixels[op++] = 255;
+        pixels[op++] = 255;
+        pixels[op++] = 255;
+        pixels[op++] = 255;
       } else {
         var r = buf[palette_offset + index * 3];
         var g = buf[palette_offset + index * 3 + 1];

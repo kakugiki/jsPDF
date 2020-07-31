@@ -49,11 +49,7 @@
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
     if (opt.innerHTML) {
-      el.innerHTML = opt.innerHTML;
-      var scripts = el.getElementsByTagName("script");
-      for (var i = scripts.length; i-- > 0; ) {
-        scripts[i].parentNode.removeChild(scripts[i]);
-      }
+      el.innerHTML = DOMPurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
       el.style[key] = opt.style[key];
@@ -351,6 +347,9 @@
           {
             async: true,
             allowTaint: true,
+            scale: 1,
+            scrollX: this.opt.scrollX || 0,
+            scrollY: this.opt.scrollY || 0,
             backgroundColor: "#ffffff",
             imageTimeout: 15000,
             logging: true,

@@ -18262,7 +18262,7 @@
       var framewidth = frame.width;
       var framestride = width - framewidth;
       var xleft = framewidth; // Number of subrect pixels left in scanline.
-      // Output indicies of the top left and bottom right corners of the subrect.
+      // Output indices of the top left and bottom right corners of the subrect.
 
       var opbeg = (frame.y * width + frame.x) * 4;
       var opend = ((frame.y + frame.height) * width + frame.x) * 4;
@@ -18328,7 +18328,7 @@
       var framewidth = frame.width;
       var framestride = width - framewidth;
       var xleft = framewidth; // Number of subrect pixels left in scanline.
-      // Output indicies of the top left and bottom right corners of the subrect.
+      // Output indices of the top left and bottom right corners of the subrect.
 
       var opbeg = (frame.y * width + frame.x) * 4;
       var opend = ((frame.y + frame.height) * width + frame.x) * 4;

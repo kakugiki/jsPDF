@@ -234,6 +234,7 @@
         position: "relative",
         display: "inline-block",
         width:
+          this.opt.width  + "px" ||
           Math.max(
             this.prop.src.clientWidth,
             this.prop.src.scrollWidth,
@@ -348,8 +349,8 @@
             async: true,
             allowTaint: true,
             scale: 1,
-            scrollX: this.opt.scrollX || 0,
-            scrollY: this.opt.scrollY || 0,
+            scrollX: 0,
+            scrollY: 0,
             backgroundColor: "#ffffff",
             imageTimeout: 15000,
             logging: true,

@@ -211,8 +211,14 @@
     // Set up function prerequisites.
     var prereqs = [
       function checkSrc() {
+        let source = this.prop.src;
+        source.removeAttribute('style');
+        let c = source.children;
+        for (let i = 0; i < c.length; i++) {
+          c[i].removeAttribute('style');
+        }
         return (
-          this.prop.src || this.error("Cannot duplicate - no source HTML.")
+          source || this.error("Cannot duplicate - no source HTML.")
         );
       },
       function checkPageSize() {

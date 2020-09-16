@@ -296,8 +296,14 @@ import { globalObject } from "../libs/globalObject.js";
     // Set up function prerequisites.
     var prereqs = [
       function checkSrc() {
+        let source = this.prop.src;
+        source.removeAttribute('style');
+        let c = source.children;
+        for (let i = 0; i < c.length; i++) {
+          c[i].removeAttribute('style');
+        }
         return (
-          this.prop.src || this.error("Cannot duplicate - no source HTML.")
+          source || this.error("Cannot duplicate - no source HTML.")
         );
       },
       function checkPageSize() {
@@ -319,6 +325,7 @@ import { globalObject } from "../libs/globalObject.js";
         position: "relative",
         display: "inline-block",
         width:
+          this.opt.width  + "px" ||
           Math.max(
             this.prop.src.clientWidth,
             this.prop.src.scrollWidth,
@@ -432,8 +439,8 @@ import { globalObject } from "../libs/globalObject.js";
             async: true,
             allowTaint: true,
             scale: 1,
-            scrollX: this.opt.scrollX || 0,
-            scrollY: this.opt.scrollY || 0,
+            scrollX: 0,
+            scrollY: 0,
             backgroundColor: "#ffffff",
             imageTimeout: 15000,
             logging: true,

@@ -8,7 +8,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
+import { globalObject } from "../libs/globalObject.js";
 
 /**
  * jsPDF html PlugIn
@@ -20,15 +20,83 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
   "use strict";
 
   function loadHtml2Canvas() {
-    return loadOptionalLibrary("html2canvas").catch(function(e) {
-      return Promise.reject(new Error("Could not load html2canvas: " + e));
-    });
+    return (function() {
+      if (globalObject["html2canvas"]) {
+        return Promise.resolve(globalObject["html2canvas"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("html2canvas");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("html2canvas"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["html2canvas"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load html2canvas"));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load html2canvas: " + e));
+      })
+      .then(function(html2canvas) {
+        return html2canvas.default ? html2canvas.default : html2canvas;
+      });
   }
 
   function loadDomPurify() {
-    return loadOptionalLibrary("dompurify", "DOMPurify").catch(function(e) {
-      return Promise.reject(new Error("Could not load dompurify: " + e));
-    });
+    return (function() {
+      if (globalObject["DOMPurify"]) {
+        return Promise.resolve(globalObject["DOMPurify"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("dompurify");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("dompurify"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["dompurify"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load dompurify"));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(dompurify) {
+        return dompurify.default ? dompurify.default : dompurify;
+      });
   }
 
   /**
@@ -900,7 +968,14 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
    * @function
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
-   * @param {string} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
+   * @param {string} [options.filename] name of the file 
+   * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
+   * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+   * @param {jsPDF} [options.jsPDF] jsPDF instance
+   * @param {number} [options.x] x position on the PDF document
+   * @param {number} [options.y] y position on the PDF document
    *
    * @example
    * var doc = new jsPDF();
@@ -908,7 +983,9 @@ import { loadOptionalLibrary } from "../libs/loadOptionalLibrary.js";
    * doc.html(document.body, {
    *    callback: function (doc) {
    *      doc.save();
-   *    }
+   *    },
+   *    x: 10,
+   *    y: 10
    * });
    */
   jsPDFAPI.html = function(src, options) {

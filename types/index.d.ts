@@ -182,22 +182,15 @@ declare module "jspdf" {
     quality: number;
   }
 
-  export interface HTMLOptionPageBreak {
-    mode?: "avoid-all" | "css" | "legacy" | ("avoid-all" | "css" | "legacy")[];
-    before?: string;
-    after?: string;
-    avoid?: string;
-  }
-
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
     filename?: string;
-    enableLinks?: boolean;
-    pagebreak?: HTMLOptionPageBreak;
     image?: HTMLOptionImage;
     html2canvas?: Html2CanvasOptions;
     jsPDF?: jsPDF;
+    x?: number;
+    y?: number;
   }
 
   //jsPDF plugin: viewerPreferences
@@ -1331,7 +1324,7 @@ declare module "jspdf" {
   }
 
   export interface jsPDFAPI {
-    events: [];
+    events: any[];
   }
 
   export default jsPDF;

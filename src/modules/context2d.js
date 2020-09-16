@@ -1,11 +1,16 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable no-console */
-/* global jsPDF, RGBColor */
 /**
+ * @license
  * jsPDF Context2D PlugIn Copyright (c) 2014 Steven Spungin (TwelveTone LLC) steven@twelvetone.tv
  *
  * Licensed under the MIT License. http://opensource.org/licenses/mit-license
  */
+
+import { jsPDF } from "../jspdf.js";
+import { RGBColor } from "../libs/rgbcolor.js";
+import { console } from "../libs/console.js";
+
 /**
  * This plugin mimics the HTML5 CanvasRenderingContext2D.
  *
@@ -418,11 +423,15 @@
         var fontSizeUnit = rxFontSize.exec(fontSize)[2];
 
         if ("px" === fontSizeUnit) {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         } else if ("em" === fontSizeUnit) {
           fontSize = Math.floor(parseFloat(fontSize) * this.pdf.getFontSize());
         } else {
-          fontSize = Math.floor(parseFloat(fontSize) * this.pdf.internal.scaleFactor);
+          fontSize = Math.floor(
+            parseFloat(fontSize) * this.pdf.internal.scaleFactor
+          );
         }
 
         this.pdf.setFontSize(fontSize);
@@ -445,21 +454,19 @@
         }
 
         var jsPdfFontName = "";
-        var parts = fontFamily
-          .toLowerCase()
-          .replace(/"|'/g, "")
-          .split(/\s*,\s*/);
+        var parts = fontFamily.replace(/"|'/g, "").split(/\s*,\s*/);
 
         var fallbackFonts = {
           arial: "Helvetica",
+          Arial: "Helvetica",
           verdana: "Helvetica",
+          Verdana: "Helvetica",
           helvetica: "Helvetica",
+          Helvetica: "Helvetica",
           "sans-serif": "Helvetica",
           fixed: "Courier",
           monospace: "Courier",
           terminal: "Courier",
-          courier: "Courier",
-          times: "Times",
           cursive: "Times",
           fantasy: "Times",
           serif: "Times"
@@ -1595,11 +1602,11 @@
     return paths;
   };
 
-  var sortPages = function (pages) {
-    return pages.sort(function (a, b) {
+  var sortPages = function(pages) {
+    return pages.sort(function(a, b) {
       return a - b;
-    })
-  }
+    });
+  };
 
   var pathPreProcess = function(rule, isClip) {
     var fillStyle = this.fillStyle;

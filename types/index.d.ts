@@ -1,11 +1,55 @@
-// Type definitions for jsPDF 1.5.4
-// Project: https://github.com/MrRio/jsPDF
-// Definitions by: Amber Schühmacher <https://github.com/amberjs>
-//                 Kevin Gonnord <https://github.com/lleios>
-//                 Jackie Weng <https://github.com/jemerald>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+/** @license
+ *
+ * jsPDF - PDF Document creation from JavaScript
+ *
+ * Copyright (c) 2010-2020 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
+ *               2015-2020 yWorks GmbH, http://www.yworks.com
+ *               2015-2020 Lukas Holländer <lukas.hollaender@yworks.com>, https://github.com/HackbrettXXX
+ *               2016-2018 Aras Abbasi <aras.abbasi@gmail.com>
+ *               2018 Amber Schühmacher <https://github.com/amberjs>
+ *               2018 Kevin Gonnord <https://github.com/lleios>
+ *               2018 Jackie Weng <https://github.com/jemerald>
+ *               2010 Aaron Spike, https://github.com/acspike
+ *               2012 Willow Systems Corporation, willow-systems.com
+ *               2012 Pablo Hess, https://github.com/pablohess
+ *               2012 Florian Jenett, https://github.com/fjenett
+ *               2013 Warren Weckesser, https://github.com/warrenweckesser
+ *               2013 Youssef Beddad, https://github.com/lifof
+ *               2013 Lee Driscoll, https://github.com/lsdriscoll
+ *               2013 Stefan Slonevskiy, https://github.com/stefslon
+ *               2013 Jeremy Morel, https://github.com/jmorel
+ *               2013 Christoph Hartmann, https://github.com/chris-rock
+ *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
+ *               2014 James Makes, https://github.com/dollaruw
+ *               2014 Diego Casorran, https://github.com/diegocr
+ *               2014 Steven Spungin, https://github.com/Flamenco
+ *               2014 Kenneth Glassey, https://github.com/Gavvers
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributor(s):
+ *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
+ *    kim3er, mfo, alnorth, Flamenco
+ */
 
-declare module "jspdf-yworks" {
+declare module "jspdf" {
   import construct = Reflect.construct;
 
   export interface Annotation {
@@ -138,22 +182,15 @@ declare module "jspdf-yworks" {
     quality: number;
   }
 
-  export interface HTMLOptionPageBreak {
-    mode?: "avoid-all" | "css" | "legacy" | ("avoid-all" | "css" | "legacy")[];
-    before?: string;
-    after?: string;
-    avoid?: string;
-  }
-
   export interface HTMLOptions {
     callback?: (doc: jsPDF) => void;
     margin?: number | number[];
     filename?: string;
-    enableLinks?: boolean;
-    pagebreak?: HTMLOptionPageBreak;
     image?: HTMLOptionImage;
     html2canvas?: Html2CanvasOptions;
     jsPDF?: jsPDF;
+    x?: number;
+    y?: number;
   }
 
   //jsPDF plugin: viewerPreferences
@@ -192,6 +229,7 @@ declare module "jspdf-yworks" {
     pageNumber: number;
   }
   // jsPDF plugin: AcroForm
+  export abstract class AcroFormField {}
   export interface AcroFormField {
     constructor(): AcroFormField;
     showWhenPrinted: boolean;
@@ -214,6 +252,7 @@ declare module "jspdf-yworks" {
     textAlign: "left" | "center" | "right";
   }
 
+  export class AcroFormChoiceField {}
   export interface AcroFormChoiceField extends AcroFormField {
     topIndex: number;
     getOptions(): string[];
@@ -228,12 +267,16 @@ declare module "jspdf-yworks" {
     commitOnSelChange: boolean;
   }
 
+  export class AcroFormListBox {}
   export interface AcroFormListBox extends AcroFormChoiceField {}
 
+  export class AcroFormComboBox {}
   export interface AcroFormComboBox extends AcroFormListBox {}
 
+  export class AcroFormEditBox {}
   export interface AcroFormEditBox extends AcroFormComboBox {}
 
+  export class AcroFormButton {}
   export interface AcroFormButton extends AcroFormField {
     noToggleToOff: boolean;
     radio: boolean;
@@ -243,8 +286,10 @@ declare module "jspdf-yworks" {
     appearanceState: any;
   }
 
+  export class AcroFormPushButton {}
   export interface AcroFormPushButton extends AcroFormButton {}
 
+  export class AcroFormChildClass {}
   export interface AcroFormChildClass extends AcroFormField {
     Parent: any;
     optionName: string;
@@ -252,15 +297,18 @@ declare module "jspdf-yworks" {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormRadioButton {}
   export interface AcroFormRadioButton extends AcroFormButton {
     setAppearance(appearance: string): void;
     createOption(name: string): AcroFormChildClass;
   }
 
+  export class AcroFormCheckBox {}
   export interface AcroFormCheckBox extends AcroFormButton {
     appearanceState: "On" | "Off";
   }
 
+  export class AcroFormTextField {}
   export interface AcroFormTextField extends AcroFormField {
     multiline: boolean;
     fileSelect: boolean;
@@ -272,6 +320,7 @@ declare module "jspdf-yworks" {
     hasAppearanceStream: boolean;
   }
 
+  export class AcroFormPasswordField {}
   export interface AcroFormPasswordField extends AcroFormTextField {}
   // jsPDF plugin: Context2D
 
@@ -562,7 +611,7 @@ declare module "jspdf-yworks" {
       postScriptName: string,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
@@ -573,7 +622,7 @@ declare module "jspdf-yworks" {
       url: URL,
       id: string,
       fontStyle: string,
-      encoding:
+      encoding?:
         | "StandardEncoding"
         | "MacRomanEncoding"
         | "Identity-H"
@@ -668,12 +717,7 @@ declare module "jspdf-yworks" {
       options?: { filename?: string }
     ): boolean;
     pdfEscape(text: string, flags: any): string;
-    path(
-      lines?: any[],
-      style?: string,
-      patternKey?: string,
-      patternData?: any
-    ): jsPDF;
+    path(lines?: any[], style?: string): jsPDF;
     rect(x: number, y: number, w: number, h: number, style?: string): jsPDF;
     restoreGraphicsState(): jsPDF;
     roundedRect(
@@ -692,14 +736,23 @@ declare module "jspdf-yworks" {
     setCurrentTransformationMatrix(matrix: Matrix): jsPDF;
     setDisplayMode(
       zoom:
+        | undefined
+        | null
         | number
         | "fullheight"
         | "fullwidth"
         | "fullpage"
         | "original"
         | string,
-      layout?: "continuous" | "single" | "twoleft" | "tworight" | "two",
-      pmode?: "UseOutlines" | "UseThumbs" | "FullScreen"
+      layout?:
+        | undefined
+        | null
+        | "continuous"
+        | "single"
+        | "twoleft"
+        | "tworight"
+        | "two",
+      pmode?: undefined | null | "UseOutlines" | "UseThumbs" | "FullScreen"
     ): jsPDF;
     setDocumentProperties(properties: DocumentProperties): jsPDF;
     setProperties(properties: DocumentProperties): jsPDF;
@@ -710,8 +763,6 @@ declare module "jspdf-yworks" {
     setFillColor(ch1: string): jsPDF;
     setFillColor(ch1: number, ch2: number, ch3: number, ch4?: number): jsPDF;
     setFont(fontName: string, fontStyle?: string): jsPDF;
-    setFontType(fontStyle: string): jsPDF;
-    setFontStyle(fontStyle: string): jsPDF;
     setFontSize(size: number): jsPDF;
     setGState(gState: any): jsPDF;
     setLineCap(style: string | number): jsPDF;
@@ -829,9 +880,6 @@ declare module "jspdf-yworks" {
 
     // jsPDF plugin: AcroForm
     addField(field: AcroFormField): jsPDF;
-    addButton(button: AcroFormButton): jsPDF;
-    addTextField(textField: AcroFormTextField): jsPDF;
-    addChoiceField(choiceField: AcroFormChoiceField): jsPDF;
 
     AcroForm: {
       ChoiceField(): AcroFormChoiceField;
@@ -860,7 +908,16 @@ declare module "jspdf-yworks" {
     setHeaderFunction(
       func: (jsPDFInstance: jsPDF, pages: number) => number[]
     ): jsPDF;
-    getTextDimensions(txt: string, options?: any): { x: number; y: number };
+    getTextDimensions(
+      text: string,
+      options?: {
+        font?: string;
+        fontSize?: number;
+        maxWidth?: number;
+        scaleFactor?: number;
+      }
+    ): { w: number; h: number };
+
     cellAddPage(): jsPDF;
     cell(
       x: number,
@@ -920,13 +977,6 @@ declare module "jspdf-yworks" {
     splitTextToSize(text: string, maxlen: number, options?: any): any;
 
     // jsPDF plugin: SVG
-    addSVG(
-      svgtext: string,
-      x: number,
-      y: number,
-      w?: number,
-      h?: number
-    ): jsPDF;
     addSvgAsImage(
       svg: string,
       x: number,
@@ -1192,6 +1242,10 @@ declare module "jspdf-yworks" {
     static version: string;
   }
 
+  export class GState {
+    constructor(parameters: GState);
+  }
+
   export interface GState {
     opacity?: number;
     "stroke-opacity"?: number;
@@ -1239,9 +1293,28 @@ declare module "jspdf-yworks" {
 
   export type ShadingPatternType = "axial" | "radial";
 
+  export class ShadingPattern {
+    constructor(
+      type: ShadingPatternType,
+      coords: number[],
+      colors: ShadingPatterStop[],
+      gState?: GState,
+      matrix?: Matrix
+    );
+  }
   export interface ShadingPattern extends Pattern {
     coords: number[];
     colors: ShadingPatterStop[];
+  }
+
+  export class TilingPattern {
+    constructor(
+      boundingBox: number[],
+      xStep: number,
+      yStep: number,
+      gState?: GState,
+      matrix?: Matrix
+    );
   }
 
   export interface TilingPattern extends Pattern {
@@ -1251,7 +1324,7 @@ declare module "jspdf-yworks" {
   }
 
   export interface jsPDFAPI {
-    events: [];
+    events: any[];
   }
 
   export default jsPDF;

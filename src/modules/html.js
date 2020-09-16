@@ -1,5 +1,5 @@
-/* global jsPDF html2canvas */
 /**
+ * @license
  * Copyright (c) 2018 Erik Koopmans
  * Released under the MIT License.
  *
@@ -7,20 +7,98 @@
  * http://opensource.org/licenses/mit-license
  */
 
+import { jsPDF } from "../jspdf.js";
+import { globalObject } from "../libs/globalObject.js";
+
 /**
  * jsPDF html PlugIn
  *
  * @name html
  * @module
  */
-(function(jsPDFAPI, global) {
+(function(jsPDFAPI) {
   "use strict";
 
-  if (typeof Promise === "undefined") {
-    // eslint-disable-next-line no-console
-    console.warn("Promise not found. html-Plugin will not work");
-    return;
+  function loadHtml2Canvas() {
+    return (function() {
+      if (globalObject["html2canvas"]) {
+        return Promise.resolve(globalObject["html2canvas"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("html2canvas");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("html2canvas"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["html2canvas"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load html2canvas"));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load html2canvas: " + e));
+      })
+      .then(function(html2canvas) {
+        return html2canvas.default ? html2canvas.default : html2canvas;
+      });
   }
+
+  function loadDomPurify() {
+    return (function() {
+      if (globalObject["DOMPurify"]) {
+        return Promise.resolve(globalObject["DOMPurify"]);
+      }
+
+      // @if MODULE_FORMAT='es'
+      return import("dompurify");
+      // @endif
+
+      // @if MODULE_FORMAT!='es'
+      if (typeof exports === "object" && typeof module !== "undefined") {
+        return new Promise(function(resolve, reject) {
+          try {
+            resolve(require("dompurify"));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      if (typeof define === "function" && define.amd) {
+        return new Promise(function(resolve, reject) {
+          try {
+            require(["dompurify"], resolve);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      return Promise.reject(new Error("Could not load dompurify"));
+      // @endif
+    })()
+      .catch(function(e) {
+        return Promise.reject(new Error("Could not load dompurify: " + e));
+      })
+      .then(function(dompurify) {
+        return dompurify.default ? dompurify.default : dompurify;
+      });
+  }
+
   /**
    * Determine the type of a variable/object.
    *
@@ -48,8 +126,8 @@
   var createElement = function(tagName, opt) {
     var el = document.createElement(tagName);
     if (opt.className) el.className = opt.className;
-    if (opt.innerHTML) {
-      el.innerHTML = DOMPurify.sanitize(opt.innerHTML);
+    if (opt.innerHTML && opt.dompurify) {
+      el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
     for (var key in opt.style) {
       el.style[key] = opt.style[key];
@@ -178,7 +256,14 @@
       type = type || getType(src);
       switch (type) {
         case "string":
-          return this.set({ src: createElement("div", { innerHTML: src }) });
+          return this.then(loadDomPurify).then(function(dompurify) {
+            return this.set({
+              src: createElement("div", {
+                innerHTML: src,
+                dompurify: dompurify
+              })
+            });
+          });
         case "element":
           return this.set({ src: src });
         case "canvas":
@@ -314,14 +399,12 @@
 
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
-      .then(function toCanvas_main() {
+      .then(loadHtml2Canvas)
+      .then(function toCanvas_main(html2canvas) {
         // Handle old-fashioned 'onrendered' argument.
         var options = Object.assign({}, this.opt.html2canvas);
         delete options.onrendered;
 
-        if (!this.isHtml2CanvasLoaded()) {
-          return;
-        }
         return html2canvas(this.prop.container, options);
       })
       .then(function toCanvas_post(canvas) {
@@ -346,7 +429,8 @@
 
     // Fulfill prereqs then create the canvas.
     return this.thenList(prereqs)
-      .then(function toContext2d_main() {
+      .then(loadHtml2Canvas)
+      .then(function toContext2d_main(html2canvas) {
         // Handle old-fashioned 'onrendered' argument.
 
         var pdf = this.opt.jsPDF;
@@ -382,10 +466,6 @@
                 this.prop.container.offsetHeight
               )
             : options.windowHeight;
-
-        if (!this.isHtml2CanvasLoaded()) {
-          return;
-        }
 
         return html2canvas(this.prop.container, options);
       })
@@ -491,14 +571,6 @@
     });
   };
 
-  Worker.prototype.isHtml2CanvasLoaded = function() {
-    var result = typeof global.html2canvas !== "undefined";
-    if (!result) {
-      throw new Error("html2canvas not loaded.");
-    }
-    return result;
-  };
-
   Worker.prototype.save = function save(filename) {
     // Set up function prerequisites.
     var prereqs = [
@@ -506,10 +578,6 @@
         return this.prop.pdf || this.toPdf();
       }
     ];
-
-    if (!this.isHtml2CanvasLoaded()) {
-      return;
-    }
 
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
     return this.thenList(prereqs)
@@ -527,9 +595,6 @@
       }
     ];
 
-    if (!this.isHtml2CanvasLoaded()) {
-      return;
-    }
     // Fulfill prereqs, update the filename (if provided), and save the PDF.
     return this.thenList(prereqs).then(function doCallback_main() {
       this.prop.callback(this.prop.pdf);
@@ -910,7 +975,14 @@
    * @function
    * @param {HTMLElement|string} source The source HTMLElement or a string containing HTML.
    * @param {Object} [options] Collection of settings
-   * @param {string} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {function} [options.callback] The mandatory callback-function gets as first parameter the current jsPDF instance
+   * @param {number|array} [options.margin] Array of margins [left, bottom, right, top]
+   * @param {string} [options.filename] name of the file 
+   * @param {HTMLOptionImage} [options.image] image settings when converting HTML to image 
+   * @param {Html2CanvasOptions} [options.html2canvas] html2canvas options
+   * @param {jsPDF} [options.jsPDF] jsPDF instance
+   * @param {number} [options.x] x position on the PDF document
+   * @param {number} [options.y] y position on the PDF document
    *
    * @example
    * var doc = new jsPDF();
@@ -918,7 +990,9 @@
    * doc.html(document.body, {
    *    callback: function (doc) {
    *      doc.save();
-   *    }
+   *    },
+   *    x: 10,
+   *    y: 10
    * });
    */
   jsPDFAPI.html = function(src, options) {
@@ -940,8 +1014,4 @@
       return worker;
     }
   };
-})(
-  jsPDF.API,
-  (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global)
-);
+})(jsPDF.API);

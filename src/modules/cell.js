@@ -1,4 +1,3 @@
-/*global jsPDF */
 /**
  * @license
  * ====================================================================
@@ -29,6 +28,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * ====================================================================
  */
+
+import { jsPDF } from "../jspdf.js";
 
 /**
  * @name cell
@@ -187,20 +188,36 @@
     var tempWidth = 0;
 
     if (!Array.isArray(text) && typeof text !== "string") {
-      throw new Error(
-        "getTextDimensions expects text-parameter to be of type String or an Array of Strings."
-      );
+      if (typeof text === "number") {
+        text = String(text);
+      } else {
+        throw new Error(
+          "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."
+        );
+      }
     }
 
-    text = Array.isArray(text) ? text : [text];
+    const maxWidth = options.maxWidth;
+    if (maxWidth > 0) {
+      if (typeof text === "string") {
+        text = this.splitTextToSize(text, maxWidth);
+      } else if (Object.prototype.toString.call(text) === "[object Array]") {
+        text = this.splitTextToSize(text.join(" "), maxWidth);
+      }
+    } else {
+      // Without the else clause, it will not work if you do not pass along maxWidth
+      text = Array.isArray(text) ? text : [text];
+    }
+
     for (var i = 0; i < text.length; i++) {
       tempWidth = this.getStringUnitWidth(text[i], { font: font }) * fontSize;
       if (width < tempWidth) {
         width = tempWidth;
       }
-      if (width !== 0) {
-        amountOfLines = text.length;
-      }
+    }
+
+    if (width !== 0) {
+      amountOfLines = text.length;
     }
 
     width = width / scaleFactor;
@@ -232,16 +249,6 @@
     this.internal.__cell__.pages += 1;
 
     return this;
-  };
-
-  /**
-   * @name cellInitialize
-   * @function
-   * @deprecated
-   */
-  jsPDFAPI.cellInitialize = function() {
-    _initialize.call(this);
-    _reset.call(this);
   };
 
   /**
@@ -444,7 +451,7 @@
         });
 
         // get header width
-        this.setFontStyle("bold");
+        this.setFont(undefined, "bold");
         columnMinWidths.push(
           this.getTextDimensions(headerLabels[i], {
             fontSize: this.internal.__cell__.table_font_size,
@@ -454,7 +461,7 @@
         column = columnMatrix[headerName];
 
         // get cell widths
-        this.setFontStyle("normal");
+        this.setFont(undefined, "normal");
         for (j = 0; j < column.length; j += 1) {
           columnMinWidths.push(
             this.getTextDimensions(column[j], {
@@ -562,8 +569,8 @@
         var key = item[0];
         var value = item[1];
         return this.splitTextToSize(
-            value,
-            columnWidths[key] - padding - padding
+          value,
+          columnWidths[key] - padding - padding
         );
       }, this)
       .map(function(value) {
@@ -623,7 +630,7 @@
         -1
       );
     }
-    this.setFontStyle("bold");
+    this.setFont(undefined, "bold");
 
     var tempHeaderConf = [];
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
@@ -639,7 +646,7 @@
     if (tempHeaderConf.length > 0) {
       this.setTableHeaderRow(tempHeaderConf);
     }
-    this.setFontStyle("normal");
+    this.setFont(undefined, "normal");
     printingHeaderRow = false;
   };
 })(jsPDF.API);
